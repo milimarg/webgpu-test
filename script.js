@@ -49,9 +49,9 @@ function createPipeline(device, format) {
             let gradientBackground = mix(topBackgroundColor, bottomBackgroundColor, backgroundT);
 
             let normalizedCoordinates = FragCoord.xy / vec2<f32>(height, height);
-            let distance = length(normalizedCoordinates - circleCenter);
+            let sdf = length(normalizedCoordinates - circleCenter) - circleRadius;
 
-            if (distance < circleRadius) {
+            if (sdf < 0.0) {
                 let dynamicYield = min(50.0, FragCoord.y / 20.0);
                 let circleT = FragCoord.y / height / 1.2;
                 let gradientCircle = mix(topCircleColor, bottomCircleColor, circleT);
