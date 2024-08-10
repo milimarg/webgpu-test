@@ -48,6 +48,10 @@ function createPipeline(device, format) {
             let gradientBackground = mix(topColor, bottomColor, backgroundT);
             return vec4<f32>(gradientBackground, 1.0);
         }
+        
+        fn subtraction(sdf1 : f32, sdf2 : f32) -> f32 {
+            return max(sdf1, -sdf2);
+        }
 
         @fragment
         fn main(@builtin(position) FragCoord : vec4<f32>) -> @location(0) vec4<f32> {
@@ -65,18 +69,18 @@ function createPipeline(device, format) {
                                                          vec3<f32>(0.0, 0.57, 0.0),
                                                          vec3<f32>(0.0, 0.66, 0.0),
                                                          vec3<f32>(0.0, 0.75, 0.0));
-            const rectangleHalfSizes = array<vec3<f32>, 5>(vec3<f32>(1.0, 0.007, 1.0),
+            const rectangleSizes = array<vec3<f32>, 5>(vec3<f32>(1.0, 0.007, 1.0),
                                                            vec3<f32>(1.0, 0.01, 1.0),
                                                            vec3<f32>(1.0, 0.015, 1.0),
                                                            vec3<f32>(1.0, 0.02, 1.0),
                                                            vec3<f32>(1.0, 0.03, 1.0));
             
-            let normalizedCoordinates = FragCoord.xyz / vec3<f32>(height, height, 1.0);
+            let normalCoordinates = FragCoord.xyz / vec3<f32>(height, height, 1.0);
 
-            var dist = computeSDFSphere(normalizedCoordinates, circleCenter, circleRadius);
+            var dist = computeSDFSphere(normalCoordinates, circleCenter, circleRadius);
 
             for (var i: u32 = 0u; i < 5; i = i + 1u) {
-                dist = max(dist, -computeSDFRectangle(normalizedCoordinates, rectangleCenters[i], rectangleHalfSizes[i]));
+                dist = subtraction(dist, computeSDFRectangle(normalCoordinates, rectangleCenters[i], rectangleSizes[i]));
             }
 
             let backgroundColor = computeBackgroundColor(FragCoord.y, height, topBackgroundColor, bottomBackgroundColor);
